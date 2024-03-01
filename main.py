@@ -263,7 +263,7 @@ while running:
             fire_bullet(bulletx, bullety)
             bullety -= b_ychange
 
-        show_score(SCREEN_WIDTH - 150, 10)
+        show_score(SCREEN_WIDTH - 200, 10)
 
         screen.blit(pause_img, pause_rect)
 

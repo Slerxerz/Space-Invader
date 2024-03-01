@@ -153,6 +153,7 @@ def iscollision(enemyx, enemyy, bulletx, bullety):
 start_screen()
 
 def pause_screen():
+    global mute
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -160,21 +161,22 @@ def pause_screen():
                 quit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if resume_rect.collidepoint(event.pos):
-                    return
+                    return 'resume'
                 elif mute_rect.collidepoint(event.pos):
+                    toggle_sound()
+                    mute = not mute
                     update_sound_icon()
 
         screen.fill((20, 20, 20))
         screen.blit(bg, (0, 0))
 
-        # Draw the resume and mute buttons
+        # Draw the resume and mute button
         screen.blit(resume_img, resume_rect)
 
         if mute:
-            screen.blit(unmute_img, unmute_rect)
-        else:
             screen.blit(mute_img, mute_rect)
-
+        else:
+            screen.blit(unmute_img, unmute_rect)
         pygame.display.update()
 
 # Game loop
@@ -194,8 +196,9 @@ while running:
                 x_change += 0.3
             elif event.key == pygame.K_SPACE:
                 if b_state == "ready":
-                    bullet_sound = mixer.Sound("audio/lazer.mp3")
-                    bullet_sound.play()
+                    if mute==False:
+                        bullet_sound = mixer.Sound("audio/lazer.mp3")
+                        bullet_sound.play()
                     bulletx = playerx
                     fire_bullet(bulletx, bullety)
             elif event.key == pygame.K_p:
@@ -207,7 +210,9 @@ while running:
             if pause_rect.collidepoint(event.pos):
                 paused = not paused
                 if paused:
-                    pause_screen()
+                    result = pause_screen()
+                    if result == "resume":
+                        paused = False
 
     if paused:
         pause_screen()
@@ -240,11 +245,12 @@ while running:
 
             collision = iscollision(enemyx[i], enemyy[i], bulletx, bullety)
             if collision:
-                ex_sound = mixer.Sound("audio/explosion.wav")
-                ex_sound.play()
+                if mute==False:
+                    ex_sound = mixer.Sound("audio/explosion.wav")
+                    ex_sound.play()
                 bullety = 500
                 b_state = "ready"
-                score_value += 1
+                score_value += 100
                 enemyx[i] = random.randint(0, SCREEN_WIDTH - PLAYER_WIDTH)
                 enemyy[i] = random.randint(50, 175)
             enemy(enemyx[i], enemyy[i], i)
@@ -260,12 +266,6 @@ while running:
         show_score(SCREEN_WIDTH - 150, 10)
 
         screen.blit(pause_img, pause_rect)
-
-        # Draw mute/unmute button
-        if mute:
-            screen.blit(unmute_img, unmute_rect)
-        else:
-            screen.blit(mute_img, mute_rect)
 
         player(playerx, playery)
         
